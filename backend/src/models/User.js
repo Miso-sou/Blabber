@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import bcrypt from 'bcryptjs'
 
 const userSchema = new mongoose.Schema({
     fullName: {
@@ -46,13 +46,11 @@ const userSchema = new mongoose.Schema({
             ref: "User"
         }
     ]
-}, {timestamps:true})
+}, { timestamps: true })
 
-const User = mongoose.model('User', userSchema)
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next()
 
-userSchema.pre('save', async function(next){
-    if(!this.isModified('password')) return next()
-    
     try {
         const salt = await bcrypt.genSalt(10)
         this.password = await bcrypt.hash(this.password, salt)
@@ -61,6 +59,9 @@ userSchema.pre('save', async function(next){
         next(error)
     }
 })
+
+const User = mongoose.model('User', userSchema)
+
 
 export default User;
 
@@ -73,4 +74,27 @@ this automatically refers to the document being saved —
 i.e., an instance of the User model.
 
 So when you write this.password, you’re directly accessing the password field of the document about to be saved.
+
+->{ if (!this.isModified('password')) return next();
+
+This line means:
+
+“If the password field hasn’t been modified, skip hashing and move on.”
+
+Why this matters:
+
+When a user updates their profile (like changing name or photo), you’ll call user.save() again.
+
+If you didn’t have this check, the hook would rehash the password every time — even though it’s already hashed.
+
+That would break login, because the password in the database would become a hash of a hash.
+
+So this condition ensures password hashing happens only when:
+
+The user is created, or
+
+The user changes their password.
+
+If the password is unchanged, it just calls next() and continues.
+}
 */
