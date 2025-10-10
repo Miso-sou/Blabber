@@ -14,6 +14,8 @@ router.get("/me", protectRoute, (req, res) => {
     res.status(200).json({success: true, user: req.user})
 })
 
+// Can add forget password with email, email verification
+
 
 
 export default router
