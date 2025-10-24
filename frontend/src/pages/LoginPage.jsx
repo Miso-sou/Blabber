@@ -1,6 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import React, { useState } from 'react'
-import { login } from '../lib/api.'
 import { Donut } from 'lucide-react'
 import { Link } from 'react-router'
 import useLogin from '../hooks/useLogin'
